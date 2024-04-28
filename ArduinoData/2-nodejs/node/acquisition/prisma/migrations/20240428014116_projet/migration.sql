@@ -1,0 +1,18 @@
+-- CreateTable
+CREATE TABLE "Session" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "start" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "stop" DATETIME
+);
+
+-- CreateTable
+CREATE TABLE "Measure" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "time" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "colorYellow" TEXT,
+    "colorPink" TEXT,
+    "colorOther" TEXT,
+    "idSession" INTEGER NOT NULL,
+    CONSTRAINT "Measure_idSession_fkey" FOREIGN KEY ("idSession") REFERENCES "Session" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);

@@ -1,0 +1,150 @@
+{% extends "layout.twig" %}
+
+{% block body %}
+
+	<div class="row mt-2">
+		<div class="col-12">
+			<h1 class="display-1">Historic</h1>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 mb-2">
+			<div class="card shadow">
+				<div class="card-body">
+					<h4 class="card-title">Recorded sessions</h4>
+					<select name="session" id="session">
+						{% for session in sessions %}
+							<option value="{{session.id}}">{{session.name | date }}</option>
+						{% endfor %}
+					</select>
+					<table id="table" class="table mt-2">
+						<thead>
+							<tr>
+								<th>Timestamp</th>
+								<th>Value</th>
+							</tr>
+						</thead>
+						<tbody id="mesures" ></tbody>
+					</table>
+				</div>
+			</div>
+
+
+		</div>
+	</div>
+
+    <div class="row d-print-none">
+        <div class="col-12">
+        <div class="card shadow">
+            <div class="card-body">
+                <canvas id="graph" ></canvas>
+            </div>
+        </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+    <script src="https://cdn.datatables.net/v/bs4/dt-2.0.3/datatables.min.js"></script>
+    <script src="/chart.umd.js"></script>
+
+    <script type="text/javascript">
+    
+    $(()=>{
+
+        //let table = new DataTable("#table")
+        let lineChart=null;
+
+        $("#session").change(function (e) { 
+            e.preventDefault();
+            console.log(e.currentTarget.value);
+
+            $.ajax({
+                type: "POST",
+                url: "/api/getSessionValues",
+                data: {idSession: e.currentTarget.value},
+                dataType: "json",
+                success: function (response) {
+                    // console.log(response);
+                    $("#mesures").empty();
+                    //table.clear()
+
+                    let labels = []
+                    let values = []
+                    let cpt = 1
+
+                    response.forEach(measure => {
+
+                        
+                        //console.log(measure);
+
+                        const row = document.createElement("tr")
+                        const timestamp = document.createElement("td")
+                        timestamp.innerHTML=measure.time
+                        const value = document.createElement("td")
+                        if (measure.colorYellow != null){
+                            value.innerHTML = measure.colorYellow
+                        }
+                        else{
+                            value.innerHTML = measure.colorPink
+                        }
+
+                        row.appendChild(timestamp)
+                        row.appendChild(value)
+                        $("#mesures").append(row);
+
+                        labels.push(cpt++)
+                        values.push(measure.value)
+                    });
+
+                    // Gestion du graphique
+
+                    
+                    const data = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Acquisition',
+                        data: values,
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                    }
+
+                    if(lineChart === null){
+                        const graph = $("#graph")
+                        lineChart = new Chart(graph, {
+                            type: 'line',
+                            data: data
+                        })
+                    } else {
+                        lineChart.destroy()
+                        const graph = $("#graph")
+                        lineChart = new Chart(graph, {
+                            type: 'line',
+                            data: data
+                        })
+                    }
+
+                    
+
+
+                }
+            });
+
+
+        });
+    })
+    
+    </script>
+
+
+
+{% endblock %}
+
+{% block stylesheets %}
+<link href="https://cdn.datatables.net/v/bs4/dt-2.0.3/datatables.min.css" rel="stylesheet">
+{% endblock %}

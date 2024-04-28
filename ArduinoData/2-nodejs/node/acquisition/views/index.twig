@@ -1,0 +1,90 @@
+{% extends 'layout.twig' %}
+
+{% block body %}
+  <div class="row mt-2">
+    <div class="col-12">
+      <h1 class="display-1">Acquisition</h1>
+    </div>
+  </div>
+  <div class="row mt-2">
+    <div class="col-8">
+
+      <div class="card shadow">
+        <div class="card-body">
+          <h4 class="card-title">Live data</h4>
+          <p class="card-text">Last acquired data at <span id="timestamp" >...waiting...</span>.</p>
+          <h4 id="measure" class="display-3">nA</h4>
+
+        </div>
+      </div>
+
+    </div>
+    <div class="col-4">
+      <div class="card shadow">
+        <div class="card-body">
+          <h4 class="card-title">Control</h4>
+          <p class="card-text">Use these controls to start or stop a record</p>
+          <button type="button" name="" id="start" class="btn btn-success btn-lg btn-block" style="display: block">Start</button>
+          <button type="button" name="" id="stop" class="btn btn-warning btn-lg btn-block" style="display: none">Stop</button>
+          <p class="card-text">Current state : <span id="state">nA</span> </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block scripts %}
+
+  <script type="text/javascript">
+  
+    $(() => {
+      setInterval(() => {
+
+        $.ajax({
+          type: "post",
+          url: "/api/state",
+          dataType: "json",
+          success: function (response) {
+            console.log(response);
+            $('#timestamp').text(response.lastTimestamp);
+            $('#measure').text(response.lastAcquisition);
+            $('#state').text((response.idle ? "IDLE" : "recording..."));
+            if(response.idle){
+              $("#start").show();
+              $("#stop").hide();
+            } else {
+              $("#stop").show();
+              $("#start").hide();
+            }
+          }
+        });
+        
+      }, 1000);
+    });
+
+
+  $("#start").click(function (e) { 
+    e.preventDefault();
+    $.post("/api/start",
+      function (data, textStatus, jqXHR) {
+        
+      },
+      "json"
+    );
+  });
+
+  $("#stop").click(function (e) { 
+    e.preventDefault();
+    $.post("/api/stop",
+      function (data, textStatus, jqXHR) {
+        
+      },
+      "json"
+    );
+  });
+
+  
+  </script>
+
+{% endblock %}

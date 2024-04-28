@@ -1,0 +1,32 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Session{
+  id        Int         @id @default(autoincrement())
+  name      DateTime    @default(now())
+  start     DateTime    @default(now())
+  stop      DateTime?
+  mesures   Measure[]
+}
+
+model Measure{
+  id        Int         @id @default(autoincrement())
+  time      DateTime    @default(now())
+  colorYellow     String?
+  colorPink       String?
+  colorOther      String?       
+  idSession Int
+  session   Session     @relation(fields: [idSession], references: [id])
+}
