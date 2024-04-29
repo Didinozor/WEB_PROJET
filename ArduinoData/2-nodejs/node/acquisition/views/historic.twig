@@ -56,7 +56,7 @@
     $(()=>{
 
         //let table = new DataTable("#table")
-        let lineChart=null;
+        let barChart=null;
 
         $("#session").change(function (e) { 
             e.preventDefault();
@@ -68,18 +68,18 @@
                 data: {idSession: e.currentTarget.value},
                 dataType: "json",
                 success: function (response) {
-                    // console.log(response);
                     $("#mesures").empty();
                     //table.clear()
 
                     let labels = []
                     let values = []
-                    let cpt = 1
+                    let cptP = 0
+                    let cptY = 0
+                    let cptOther = 0
+
+                    labels.push("Pink","Yellow","Other")
 
                     response.forEach(measure => {
-
-                        
-                        //console.log(measure);
 
                         const row = document.createElement("tr")
                         const timestamp = document.createElement("td")
@@ -87,18 +87,22 @@
                         const value = document.createElement("td")
                         if (measure.colorYellow != null){
                             value.innerHTML = measure.colorYellow
+                            cptY++
+                        }
+                        else if(measure.colorPink != null){
+                            value.innerHTML = measure.colorPink
+                            cptP++
                         }
                         else{
-                            value.innerHTML = measure.colorPink
+                            value.innerHTML = measure.colorOther
+                            cptOther++
                         }
 
                         row.appendChild(timestamp)
                         row.appendChild(value)
                         $("#mesures").append(row);
-
-                        labels.push(cpt++)
-                        values.push(measure.value)
                     });
+                    values.push(cptP, cptY, cptOther)
 
                     // Gestion du graphique
 
@@ -108,41 +112,54 @@
                     datasets: [{
                         label: 'Acquisition',
                         data: values,
-                        fill: false,
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 205, 86, 0.2)',
+                            'rgba(153, 102, 255, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 205, 86)',
+                            'rgb(153, 102, 255)'
+                        ],
+                        borderWidth: 1
                     }]
                     }
 
-                    if(lineChart === null){
+                    if(barChart === null){
                         const graph = $("#graph")
-                        lineChart = new Chart(graph, {
-                            type: 'line',
-                            data: data
+                        barChart = new Chart(graph, {
+                            type: 'bar',
+                            data: data,
+                            options: {
+                                scales: {
+                                  y: {
+                                    beginAtZero: true
+                                  }
+                                }
+                              },
                         })
                     } else {
-                        lineChart.destroy()
+                        barChart.destroy()
                         const graph = $("#graph")
-                        lineChart = new Chart(graph, {
-                            type: 'line',
-                            data: data
+                        barChart = new Chart(graph, {
+                            type: 'bar',
+                            data: data,
+                            options: {
+                                scales: {
+                                  y: {
+                                    beginAtZero: true
+                                  }
+                                }
+                              },
                         })
                     }
-
-                    
-
-
                 }
             });
-
-
         });
     })
     
     </script>
-
-
-
 {% endblock %}
 
 {% block stylesheets %}

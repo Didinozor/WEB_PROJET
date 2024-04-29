@@ -32,8 +32,9 @@ parser.on('data', (data)=>{
   if(etat.idle === false && currentSession){
     prisma.measure.create({ data: {
       time: etat.lastTimestamp,
-      colorYellow: etat.lastAcquisition === 'yellow' ? etat.lastAcquisition : undefined,
-      colorPink: etat.lastAcquisition === 'pink' ? etat.lastAcquisition : undefined,
+      colorYellow: etat.lastAcquisition === 'YELLOW' ? etat.lastAcquisition : undefined,
+      colorPink: etat.lastAcquisition === 'PINK' ? etat.lastAcquisition : undefined,
+      colorOther: etat.lastAcquisition === 'OTHER' ? etat.lastAcquisition : undefined,
       idSession: currentSession.id
     }}).then()
   }
@@ -84,6 +85,16 @@ router.post('/api/stop', (req, res, next)=>{
 
 router.post('/api/state', (req, res, next)=>{
   res.status(200).json(etat)
+})
+
+/* Api pour send le reset à l'arduino SEULEMENT en idle */
+router.post('/api/sendData', (req, res, next)=>{
+  if(etat.idle === true){
+    arduino.write("true\n");
+    res.status(200).send()
+  } else {
+    res.status(403).send()
+  }
 })
 
 async function startLogging(){
