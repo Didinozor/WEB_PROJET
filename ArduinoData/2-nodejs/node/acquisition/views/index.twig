@@ -33,7 +33,7 @@
     </div>
   </div>
 
-  <div class="row d-print-none mt-4">
+  <div class="row d-print-none mt-4 mb-4">
     <div class="col-12">
     <div class="card shadow">
         <div class="card-body">
@@ -47,141 +47,115 @@
 
 
 {% block scripts %}
+  <!-- Inclure jQuery et Chart.js -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script type="text/javascript">
-  
     $(() => {
-
-      let barChart=null;
-
-      let labels = []
-      let values = []
-      let cptP = 0
-      let cptY = 0
-      let cptOther = 0
-
-      labels.push("Pink","Yellow","Other")
+      let barChart = null;
+      let labels = ["Pink", "Yellow", "Other"];
+      let values = [0, 0, 0];
+      let lastTimestamp = null; // Garder une trace du dernier timestamp
 
       setInterval(() => {
-
         $.ajax({
           type: "post",
           url: "/api/state",
           dataType: "json",
           success: function (response) {
-            console.log(response);
             $('#timestamp').text(response.lastTimestamp);
             $('#measure').text(response.lastAcquisition);
-            $('#state').text((response.idle ? "IDLE" : "recording..."));
+            $('#state').text(response.idle ? "IDLE" : "recording...");
 
-            if(response.idle){
-              $("#start").show();
-              $("#stop").hide();
-            } else {
-              $("#stop").show();
-              $("#start").hide();
-            }
+            // Vérifier si le timestamp de la dernière acquisition est différent du précédent
+            if (response.lastTimestamp !== lastTimestamp) {
+              // Mettre à jour le dernier timestamp
+              lastTimestamp = response.lastTimestamp;
 
-            if(reponse.lastAcquisition === 'PINK'){
-              cptP++
-            } else if(reponse.lastAcquisition === 'YELLOW'){
-              cptY++
-            } else if(reponse.lastAcquisition === 'OTHER') {
-              cptOther++
-            }
-
-            values.push(cptP, cptY, cptOther)
-
-            // DATA POUR LA TABLE ET SA CREATION
-            const data = {
-            labels: labels,
-            datasets: [{
-                label: 'Acquisition',
-                data: values,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(255, 205, 86, 0.2)',
-                    'rgba(153, 102, 255, 0.2)'
-                ],
-                borderColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(255, 205, 86)',
-                    'rgb(153, 102, 255)'
-                ],
-                borderWidth: 1
-            }]
-            }
-      
-            if(barChart === null){
-                const graph = $("#graph")
-                barChart = new Chart(graph, {
-                    type: 'bar',
-                    data: data,
-                    options: {
-                        scales: {
-                          y: {
-                            beginAtZero: true
-                          }
-                        }
-                      },
-                })
-            } else {
-                barChart.destroy()
-                const graph = $("#graph")
-                barChart = new Chart(graph, {
-                    type: 'bar',
-                    data: data,
-                    options: {
-                        scales: {
-                          y: {
-                            beginAtZero: true
-                          }
-                        }
-                      },
-                 })
+              // Mettre à jour les compteurs en fonction de la dernière acquisition
+              if (response.lastAcquisition === 'PINK') {
+                values[0]++;
+              } else if (response.lastAcquisition === 'YELLOW') {
+                values[1]++;
+              } else if (response.lastAcquisition === 'OTHER') {
+                values[2]++;
               }
-            // FIN DATA TABLE
+
+              // Mettre à jour le graphique
+              updateChart();
+            }
           }
-        
         });
-        
-      }, 1000);
+      }, 1000); // Rafraîchir toutes les secondes
+
+      function updateChart() {
+        const data = {
+          labels: labels,
+          datasets: [{
+            label: 'Acquisition',
+            data: values,
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.2)',
+              'rgba(255, 205, 86, 0.2)',
+              'rgba(153, 102, 255, 0.2)'
+            ],
+            borderColor: [
+              'rgb(255, 99, 132)',
+              'rgb(255, 205, 86)',
+              'rgb(153, 102, 255)'
+            ],
+            borderWidth: 1
+          }]
+        };
+
+        if (barChart === null) {
+          const graph = document.getElementById('graph');
+          barChart = new Chart(graph, {
+            type: 'bar',
+            data: data,
+            options: {
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+        } else {
+          barChart.data.datasets.forEach((dataset) => {
+            dataset.data = values;
+          });
+          barChart.update();
+        }
+      }
+
+      // Gestionnaires d'événements pour les boutons
+      $("#start").click(function (e) {
+        e.preventDefault();
+        $.post("/api/start", function (data, textStatus, jqXHR) {
+          // Traiter la réponse si nécessaire
+        }, "json");
+      });
+
+      $("#stop").click(function (e) {
+        e.preventDefault();
+        $.post("/api/stop", function (data, textStatus, jqXHR) {
+          // Traiter la réponse si nécessaire
+        }, "json");
+      });
+
+      $("#reset").click(function (e) {
+        values = [0, 0, 0];
+        updateChart();
+        e.preventDefault();
+        $.post("/api/sendData", function (data, textStatus, jqXHR) {
+          // Traiter la réponse si nécessaire
+        }, "json");
+      });
 
     });
-
-  $("#start").click(function (e) { 
-    e.preventDefault();
-    $.post("/api/start",
-      function (data, textStatus, jqXHR) {
-        
-      },
-      "json"
-    );
-  });
-
-  $("#stop").click(function (e) { 
-    e.preventDefault();
-    $.post("/api/stop",
-      function (data, textStatus, jqXHR) {
-        
-      },
-      "json"
-    );
-  });
-
-  $("#reset").click(function (e) { 
-    e.preventDefault();
-    $.post("/api/sendData",
-      function (data, textStatus, jqXHR) {
-        
-      },
-      "json"
-    );
-  });
-
-  
   </script>
-
 {% endblock %}
 
 {% block stylesheets %}
