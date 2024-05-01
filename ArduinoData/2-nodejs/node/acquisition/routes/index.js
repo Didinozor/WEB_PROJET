@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 const { SerialPort } = require('serialport')
 const { ReadlineParser } = require('@serialport/parser-readline')
 
-const port = "COM4"
+const port = "COM3"
 
 const arduino = new SerialPort({
   path: port,
