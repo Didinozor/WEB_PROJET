@@ -65,7 +65,12 @@
           dataType: "json",
           success: function (response) {
             $('#timestamp').text(response.lastTimestamp);
-            $('#measure').text(response.lastAcquisition);
+            
+            if(response.lastAcquisition !== null)
+              $('#measure').text(response.lastAcquisition);
+            else
+              $('#measure').text("EMPTY");
+
             $('#state').text(response.idle ? "IDLE" : "recording...");
             if(response.idle){
               $('#start').show();
