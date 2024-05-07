@@ -57,6 +57,7 @@
       let labels = ["Pink", "Yellow", "Other"];
       let values = [0, 0, 0];
       let lastTimestamp = null; // Garder une trace du dernier timestamp
+      let date = 0;
 
       setInterval(() => {
         $.ajax({
@@ -64,7 +65,8 @@
           url: "/api/state",
           dataType: "json",
           success: function (response) {
-            $('#timestamp').text(response.lastTimestamp);
+            date = new Date(response.lastTimestamp);
+            $('#timestamp').text( date.getDate() + '/' + (date.getMonth() + 1) + '/' +  date.getFullYear());
             
             if(response.lastAcquisition !== null)
               $('#measure').text(response.lastAcquisition);
@@ -122,7 +124,7 @@
         };
 
         if (barChart === null) {
-          const graph = document.getElementById('graph');
+          const graph = $('#graph');
           barChart = new Chart(graph, {
             type: 'bar',
             data: data,
@@ -168,8 +170,4 @@
 
     });
   </script>
-{% endblock %}
-
-{% block stylesheets %}
-<link href="https://cdn.datatables.net/v/bs4/dt-2.0.3/datatables.min.css" rel="stylesheet">
 {% endblock %}
