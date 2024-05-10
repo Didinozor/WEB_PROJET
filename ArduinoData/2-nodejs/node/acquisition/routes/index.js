@@ -79,7 +79,10 @@ router.post('/api/getSessionValues', (req, res, next)=>{
   }).then(val=>{
     res.status(200).json(val)
   })
+})
 
+router.post('/api/getSessionContainers', (req, res, next)=>{
+  const idSession = Number(req.body.idSession)
   prisma.container.findMany({
     where: {
       idSession: idSession
@@ -88,7 +91,6 @@ router.post('/api/getSessionValues', (req, res, next)=>{
     res.status(200).json(val)
   })
 })
-
 
 router.post('/api/start', (req, res, next)=>{
   if(etat.idle === true){

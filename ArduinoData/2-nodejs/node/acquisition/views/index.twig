@@ -70,13 +70,17 @@
 
             // Prendre la date et la formater
             date = new Date(response.lastTimestamp);
-            $('#timestamp').text( date.getDate() + '/' + (date.getMonth() + 1) + '/' +  date.getFullYear());
+           
             
             // Mettre à jour la dernière acquisition
-            if(response.lastAcquisition !== null)
+            if(response.lastAcquisition !== null){
               $('#measure').text(response.lastAcquisition);
-            else
+              $('#timestamp').text( date.toLocaleTimeString());
+            }
+            else{
               $('#measure').text("EMPTY");
+              $('#timestamp').text("...waiting...");
+            }
 
             $('#state').text(response.idle ? "IDLE" : "recording...");
             if(response.idle){

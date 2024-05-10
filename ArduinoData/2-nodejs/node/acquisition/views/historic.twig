@@ -62,6 +62,7 @@
             e.preventDefault();
             console.log(e.currentTarget.value);
 
+            // Ajax concernant le tableau
             $.ajax({
                 type: "POST",
                 url: "/api/getSessionValues",
@@ -71,33 +72,32 @@
                     $("#mesures").empty();
                     //table.clear()
 
-                    let labels = []
-                    let values = []
-
-                    labels.push("Pink","Yellow","Other")
-
                     response.forEach(measure => {
 
                         const row = document.createElement("tr")
                         const timestamp = document.createElement("td")
-                        timestamp.innerHTML=measure.time
+                        timestamp.innerHTML = new Date(measure.time).toLocaleTimeString();
                         const value = document.createElement("td")
-
-                        if (measure.ballColor === "YELLOW"){
-                            value.innerHTML = measure.ballColor
-                        }
-                        else if(measure.ballColor === "YELLOW"){
-                            value.innerHTML = measure.ballColor
-                        }
-                        else{
-                            value.innerHTML = measure.ballColor
-                        }
+                        value.innerHTML = measure.ballColor
 
                         row.appendChild(timestamp)
                         row.appendChild(value)
                         $("#mesures").append(row);
                     });
-                    
+            
+                }
+            });
+
+            // Ajax concernant le graphique
+            $.ajax({
+                type: "POST",
+                url: "/api/getSessionContainers",
+                data: {idSession: e.currentTarget.value},
+                dataType: "json",
+                success: function (response) {
+                    let labels = ["Pink","Yellow","Other"]
+                    let values = [0,0,0]  
+
                     values[0] = response.filter(container => container.ballColor === "PINK").length
                     values[1] = response.filter(container => container.ballColor === "YELLOW").length
                     values[2] = response.filter(container => container.ballColor === "OTHER").length
