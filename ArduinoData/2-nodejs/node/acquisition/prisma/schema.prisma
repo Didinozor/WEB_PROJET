@@ -7,20 +7,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Container {
+  id          Int      @id @default(autoincrement())
+  ballColor   String
+  ballNumber  Int?
+  idSession   Int
+  mesures     Measure[]
+  session     Session  @relation(fields: [idSession], references: [id])
+}
+
 model Session {
   id      Int       @id @default(autoincrement())
   name    DateTime  @default(now())
   start   DateTime  @default(now())
   stop    DateTime?
   mesures Measure[]
+  container Container[]
 }
 
 model Measure {
   id          Int      @id @default(autoincrement())
   time        DateTime @default(now())
-  colorYellow String?
-  colorPink   String?
-  colorOther  String?
+  ballColor   String?
   idSession   Int
-  session     Session  @relation(fields: [idSession], references: [id])
+  idContainer Int
+  session     Session   @relation(fields: [idSession], references: [id])
+  container   Container @relation(fields: [idContainer], references: [id])
 }

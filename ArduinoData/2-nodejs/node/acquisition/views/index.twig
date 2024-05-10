@@ -55,7 +55,7 @@
     $(() => {
       let barChart = null;
       let labels = ["Pink", "Yellow", "Other"];
-      let values = [0, 0, 0];
+      let values = [0, 0, 0]; // Valeurs initiales pour le graphique (obligatoire car on ne peut pas prendre response.values directement)
       let lastTimestamp = null; // Garder une trace du dernier timestamp
       let date = 0;
 
@@ -65,9 +65,14 @@
           url: "/api/state",
           dataType: "json",
           success: function (response) {
+
+            values = response.values;
+
+            // Prendre la date et la formater
             date = new Date(response.lastTimestamp);
             $('#timestamp').text( date.getDate() + '/' + (date.getMonth() + 1) + '/' +  date.getFullYear());
             
+            // Mettre à jour la dernière acquisition
             if(response.lastAcquisition !== null)
               $('#measure').text(response.lastAcquisition);
             else
@@ -83,31 +88,23 @@
             }
 
             // Vérifier si le timestamp de la dernière acquisition est différent du précédent
-            if (response.lastTimestamp !== lastTimestamp) {
+            //if (response.lastTimestamp !== lastTimestamp) {
               // Mettre à jour le dernier timestamp
-              lastTimestamp = response.lastTimestamp;
-
-              // Mettre à jour les compteurs en fonction de la dernière acquisition
-              if (response.lastAcquisition === 'PINK') {
-                values[0]++;
-              } else if (response.lastAcquisition === 'YELLOW') {
-                values[1]++;
-              } else if (response.lastAcquisition === 'OTHER') {
-                values[2]++;
-              }
+              //lastTimestamp = response.lastTimestamp;
 
               // Mettre à jour le graphique
               updateChart();
-            }
+            //}
           }
         });
       }, 1000);
 
+      // Fonction pour mettre à jour le graphique
       function updateChart() {
         const data = {
           labels: labels,
           datasets: [{
-            label: 'Acquisition',
+            label: 'Live Acquisition',
             data: values,
             backgroundColor: [
               'rgba(255, 99, 132, 0.2)',

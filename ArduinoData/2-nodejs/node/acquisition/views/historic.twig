@@ -73,9 +73,6 @@
 
                     let labels = []
                     let values = []
-                    let cptP = 0
-                    let cptY = 0
-                    let cptOther = 0
 
                     labels.push("Pink","Yellow","Other")
 
@@ -85,24 +82,25 @@
                         const timestamp = document.createElement("td")
                         timestamp.innerHTML=measure.time
                         const value = document.createElement("td")
-                        if (measure.colorYellow != null){
-                            value.innerHTML = measure.colorYellow
-                            cptY++
+
+                        if (measure.ballColor === "YELLOW"){
+                            value.innerHTML = measure.ballColor
                         }
-                        else if(measure.colorPink != null){
-                            value.innerHTML = measure.colorPink
-                            cptP++
+                        else if(measure.ballColor === "YELLOW"){
+                            value.innerHTML = measure.ballColor
                         }
                         else{
-                            value.innerHTML = measure.colorOther
-                            cptOther++
+                            value.innerHTML = measure.ballColor
                         }
 
                         row.appendChild(timestamp)
                         row.appendChild(value)
                         $("#mesures").append(row);
                     });
-                    values.push(cptP, cptY, cptOther)
+                    
+                    values[0] = response.filter(container => container.ballColor === "PINK").length
+                    values[1] = response.filter(container => container.ballColor === "YELLOW").length
+                    values[2] = response.filter(container => container.ballColor === "OTHER").length
 
                     // Gestion du graphique
 
