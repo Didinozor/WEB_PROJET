@@ -14,6 +14,7 @@
 				<div class="card-body">
 					<h4 class="card-title">Recorded sessions</h4>
 					<select name="session" id="session">
+                        <option value disabled selected>-----</option>
 						{% for session in sessions %}
 							<option value="{{session.id}}">{{session.name | date }}</option>
 						{% endfor %}
@@ -98,17 +99,15 @@
                     let labels = ["Pink","Yellow","Other"]
                     let values = [0,0,0]  
 
-                    values[0] = response.filter(container => container.ballColor === "PINK").length
-                    values[1] = response.filter(container => container.ballColor === "YELLOW").length
-                    values[2] = response.filter(container => container.ballColor === "OTHER").length
+                    values[0] = response.lastPinkBallNumber
+                    values[1] = response.lastYellowBallNumber
+                    values[2] = response.lastOtherBallNumber
 
                     // Gestion du graphique
-
-                    
                     const data = {
                     labels: labels,
                     datasets: [{
-                        label: 'Acquisition',
+                        label: 'Total of balls per color',
                         data: values,
                         backgroundColor: [
                             'rgba(255, 99, 132, 0.2)',

@@ -24,9 +24,15 @@
         <div class="card-body">
           <h4 class="card-title">Control</h4>
           <p class="card-text">Use these controls to start or stop a record</p>
-          <button type="button" name="" id="start" class="btn btn-success btn-lg btn-block" style="display: block">Start</button>
-          <button type="button" name="" id="stop" class="btn btn-danger btn-lg btn-block" style="display: none">Stop</button>
-          <button type="button" name="" id="reset" class="btn btn-warning btn-lg btn-block mt-4" style="display: block">Reset</button>
+          <div class="row">
+            <div class="col">
+              <button type="button" name="" id="start" class="btn btn-success btn-lg btn-block">Start</button>
+              <button type="button" name="" id="stop" class="btn btn-danger btn-lg btn-block" style="display: none">Stop</button>
+            </div>
+            <div class="col">
+              <button type="button" name="" id="reset" class="btn btn-warning btn-lg btn-block">Reset</button>
+            </div>
+          </div>
           <p class="card-text">Current state : <span id="state">nA</span> </p>
         </div>
       </div>
@@ -56,7 +62,6 @@
       let barChart = null;
       let labels = ["Pink", "Yellow", "Other"];
       let values = [0, 0, 0]; // Valeurs initiales pour le graphique (obligatoire car on ne peut pas prendre response.values directement)
-      let lastTimestamp = null; // Garder une trace du dernier timestamp
       let date = 0;
 
       setInterval(() => {
@@ -82,19 +87,19 @@
               $('#timestamp').text("...waiting...");
             }
 
+            // Mettre à jour l'état
             $('#state').text(response.idle ? "IDLE" : "recording...");
+
+            // Mettre à jour les boutons
             if(response.idle){
               $('#start').show();
+              $('#reset').show();
               $('#stop').hide();
             }else{
               $('#start').hide();
+              $('#reset').hide();
               $('#stop').show();
             }
-
-            // Vérifier si le timestamp de la dernière acquisition est différent du précédent
-            //if (response.lastTimestamp !== lastTimestamp) {
-              // Mettre à jour le dernier timestamp
-              //lastTimestamp = response.lastTimestamp;
 
               // Mettre à jour le graphique
               updateChart();
@@ -124,6 +129,7 @@
           }]
         };
 
+        // Si le graphique n'existe pas, le créer
         if (barChart === null) {
           const graph = $('#graph');
           barChart = new Chart(graph, {
@@ -137,7 +143,8 @@
               }
             }
           });
-        } else {
+        }// Sinon, le mettre à jour
+         else {
           barChart.data.datasets.forEach((dataset) => {
             dataset.data = values;
           });

@@ -23,10 +23,17 @@ const etat = {
   values: [0, 0, 0]
 }
 
+const ballNumber = {
+  lastPinkBallNumber: NaN,
+  lastYellowBallNumber: NaN,
+  lastOtherBallNumber: NaN
+}
+
 let currentSession = null
 
 const parser = arduino.pipe(new ReadlineParser({ delimiter: '\r\n' }))
 
+// L'arduino envoie des données
 parser.on('data', (data)=>{
 
   etat.lastTimestamp = new Date()
@@ -35,9 +42,10 @@ parser.on('data', (data)=>{
 
   etat.lastAcquisition === 'PINK' ? etat.values[0]++ : etat.lastAcquisition === 'YELLOW' ? etat.values[1]++ : etat.lastAcquisition === 'OTHER' ?  etat.values[2]++ : null;
 
-  if(etat.idle === false && currentSession){
+  if(etat.idle === false && currentSession && etat.lastAcquisition !== 'EMPTY'){
     createMeasure();
   }
+  if(etat.lastAcquisition === 'EMPTY') etat.values = [0, 0, 0]
 })
 
 // Fonction pour creer une nouvelle mesure & container
@@ -45,7 +53,7 @@ async function createMeasure() {
   const currentContainer = await prisma.container.create({
     data: {
       ballColor: etat.lastAcquisition,
-      ballNumber: etat.lastAcquisition === 'PINK' ? etat.values[0] : etat.lastAcquisition === 'YELLOW' ? etat.values[1] : etat.lastAcquisition === 'OTHER' ?  etat.values[2] : null,
+      ballNumber: etat.lastAcquisition === 'PINK' ? etat.values[0] : etat.lastAcquisition === 'YELLOW' ? etat.values[1] : etat.values[2],
       idSession: currentSession.id
     }
   });
@@ -65,11 +73,13 @@ router.get('/', function(req, res, next) {
   res.render('index', {  });
 });
 
+// Page pour afficher les logs
 router.get('/log', async (req, res, next)=> {
   const sessions = await prisma.session.findMany()
   res.render('historic', { sessions: sessions })
 })
 
+// Api pour recuperer les valeurs des containers de la session en cours
 router.post('/api/getSessionValues', (req, res, next)=>{
   const idSession = Number(req.body.idSession)
   prisma.measure.findMany({
@@ -81,17 +91,35 @@ router.post('/api/getSessionValues', (req, res, next)=>{
   })
 })
 
-router.post('/api/getSessionContainers', (req, res, next)=>{
+// Fonction pour recuperer le dernier numero de balle de la couleur demandée
+async function getLastBallNumber(req, color) {
   const idSession = Number(req.body.idSession)
-  prisma.container.findMany({
+  const containers = await prisma.container.findMany({
     where: {
+      ballColor: color,
       idSession: idSession
-    }
-  }).then(val=>{
-    res.status(200).json(val)
-  })
+    },
+    orderBy: {
+
+      id: 'desc'
+    },
+    take: 1
+  });
+
+  if (!containers[0] || containers[0].ballNumber === null) return NaN
+
+  return containers[0].ballNumber
+}
+
+// Api pour recuperer les valeurs des containers de la session en cours
+router.post('/api/getSessionContainers', async (req, res, next)=>{
+  ballNumber.lastPinkBallNumber = await getLastBallNumber(req,'PINK');
+  ballNumber.lastYellowBallNumber = await getLastBallNumber(req, 'YELLOW');
+  ballNumber.lastOtherBallNumber = await getLastBallNumber(req, 'OTHER');
+  res.status(200).json(ballNumber)
 })
 
+// Api pour recuperer les valeurs des containers de la session en cours
 router.post('/api/start', (req, res, next)=>{
   if(etat.idle === true){
     etat.idle=false
@@ -102,6 +130,7 @@ router.post('/api/start', (req, res, next)=>{
   }
 })
 
+// Api pour arreter la session en cours
 router.post('/api/stop', (req, res, next)=>{
   if(etat.idle === false){
     etat.idle=true
@@ -113,6 +142,7 @@ router.post('/api/stop', (req, res, next)=>{
   
 })
 
+// Api pour recuperer l'etat de l'acquisition
 router.post('/api/state', (req, res, next)=>{
   res.status(200).json(etat)
 })
@@ -128,12 +158,14 @@ router.post('/api/sendData', (req, res, next)=>{
   }
 })
 
+// Fonction pour creer une nouvelle session
 async function startLogging(){
   // Creer une nouvelle session
   currentSession = await prisma.session.create({})
   console.log(currentSession);
 }
 
+// Fonction pour arreter la session en cours
 function stopLogging(){
   // Arreter la session en cours
   prisma.session.update({
