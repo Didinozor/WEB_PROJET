@@ -13,7 +13,7 @@ const arduino = new SerialPort({
 })
 
 arduino.on('error', (err)=>{
-  console.log(err);
+  console.log(err) ;
 })
 
 const etat = {
