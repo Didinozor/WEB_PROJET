@@ -73,6 +73,10 @@ router.get('/', function(req, res, next) {
   res.render('index', {  });
 });
 
+router.get('/about', function(req, res, next) {
+  res.render('about', {  });
+});
+
 // Page pour afficher les logs
 router.get('/log', async (req, res, next)=> {
   const sessions = await prisma.session.findMany()
