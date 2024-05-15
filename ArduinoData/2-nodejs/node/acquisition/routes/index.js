@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 const { SerialPort } = require('serialport')
 const { ReadlineParser } = require('@serialport/parser-readline')
 
-const port = "COM6"
+const port = "COM7"
 
 const arduino = new SerialPort({
   path: port,
@@ -41,7 +41,7 @@ parser.on('data', (data)=>{
   console.log(etat.lastAcquisition);
 
   etat.lastAcquisition === 'PINK' ? etat.values[0]++ : etat.lastAcquisition === 'YELLOW' ? etat.values[1]++ : etat.lastAcquisition === 'OTHER' ?  etat.values[2]++ : null;
-
+  console.log(etat.values);
   if(etat.idle === false && currentSession && etat.lastAcquisition !== 'EMPTY'){
     createMeasure();
   }

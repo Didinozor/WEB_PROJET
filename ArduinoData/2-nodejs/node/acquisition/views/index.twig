@@ -113,7 +113,7 @@
         labels: labels,
         datasets: [{
           label: 'Number of pink balls',
-          data: values[0],
+          data: [values[0]],
           backgroundColor: [
             'rgba(255, 105, 180, 0.75)',
           ],
@@ -124,7 +124,7 @@
         },
         {
           label: 'Number of yellow balls',
-          data: values[1],
+          data: [values[1]],
           backgroundColor: [
             'rgba(255, 205, 86, 0.75)',
           ],
@@ -135,7 +135,7 @@
         },
         {
           label: 'Number of other balls',
-          data: values[2],
+          data: [values[2]],
           backgroundColor: [
             'rgba(153, 102, 255, 0.75)',
           ],
@@ -183,9 +183,9 @@
         });
       }// Sinon, le mettre à jour
       else {
-        barChart.data.datasets.forEach((dataset) => {
-          dataset.data = values;
-        });
+        barChart.data.datasets[0].data = [values[0]];
+        barChart.data.datasets[1].data = [values[1]];
+        barChart.data.datasets[2].data = [values[2]];
         barChart.update();
       }
     }
